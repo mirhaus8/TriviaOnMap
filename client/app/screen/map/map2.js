@@ -5,7 +5,6 @@ import * as Location from 'expo-location';
 import { countries } from 'country-data';
 import { List, MD3Colors, TextInput } from 'react-native-paper';
 import { convertIso2Code } from 'convert-country-codes';
-import contriesData from './../../data/countries.json'
 
 import { MyContext } from "../../context/QuestionsContext";
 import { RadioButton } from 'react-native-paper';
@@ -72,7 +71,6 @@ export const Map2 = (props) => {
 
 
       const handleRegionChange = (newRegion) => {
-        // Check if the new region is within the boundaries of Europe
         const inBounds =
           newRegion.latitude > EuropeBounds.southWest.latitude &&
           newRegion.latitude < EuropeBounds.northEast.latitude &&
@@ -80,7 +78,6 @@ export const Map2 = (props) => {
           newRegion.longitude < EuropeBounds.northEast.longitude;
     
         if (inBounds) {
-            //console.log("in boundddssss", newRegion)
           setRegion(newRegion);
         }
         else{
@@ -144,7 +141,7 @@ export const Map2 = (props) => {
         let userRefreshToken = await AsyncStorage.getItem('userRefToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/token",
+            url: "http://54.161.154.243/token",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -153,13 +150,9 @@ export const Map2 = (props) => {
             
         };
         try {
-            //console.log("in get refresh token")
             let response = await axios(options);
-            //console.log("responseOk refreshToken", response.status)
             let responseOK = response && response.status === 200;
-            //console.log("responseOk refreshToken", responseOK)
             if (responseOK) {
-              //  console.log("in get refresh token",response.data.accessToken)
                 await setTokens(response.data.accessToken)
             }
         }catch{}
@@ -173,158 +166,100 @@ export const Map2 = (props) => {
                     gameName: props.route.params.gameName,
                     teamName: props.route.params.teamName,
                     occupiedCountry: cntrName }, 
-                    async (x, y) => {
-                        console.log("xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", x.color, x.team)
-                        
+                    async (x, y) => {                        
                         var countryISO = lookup.countries({ name: x["country"] })[0]["alpha3"];
-                        let countryPolygon = contriesData["features"].find(stateObj => {
-                            return stateObj["properties"]["ISO_A3"] === countryISO
-                        })
-                        //let countryPolygon = await getGeometry(countryISO)
-                        //setStates([...states, countryPolygon]);
+                    
+                        let countryPolygon = await getGeometry(countryISO)
 
                         setTeamsTerritories(prevData => {
-                            // Find the index of the element with the specified name
                             const index = prevData.findIndex(item => item.name == x.team);
                             if (index !== -1) {
-                            // If the element is found, update its occupiedCo array
                             const updatedElement = { ...prevData[index],
                                 occupiedCountries:[...prevData[index].occupiedCountries, countryPolygon],
                                 teamPoints: prevData[index].teamPoints+ x.countryPoints,
                                 color: prevData[index].color?prevData[index].color:x.color};
                             return [...prevData.slice(0, index), updatedElement, ...prevData.slice(index + 1)];
                             } else {
-                            // If the element is not found, add a new element to the state variable
                             return [...prevData, { name:x.team, color:x.color, occupiedCountries: [countryPolygon], teamPoints: x.countryPoints}];
                             }
                         })
-                        //setColor(x.color)
-
-                    //console.log("statessssss", states)
-                    // setPoints(points + x["countryPoints"])
-                    // if (!color) {
-                    //   //  console.log("hii colooorrrr - ", color, x["color"])
-                    //     setColor(x["color"])
-                    // }
-                    // if(y["winners"].length !=0 && y["winners"].length==1 && y["winners"].includes(props.route.params.originCountry)){
-                    //     setEndGame( true)
-
-                    //     ShowAlert();
-                    // }
-
+                        if(y.winners.length==1 && y.winners[0]==props.route.params.teamName){
+                            ShowAlertWin()
+                        }
                 });
                 if (showWin)
                     ShowAlertWin()
             }
             else{
-                ShowAlertWrong()
+                
                 socket.emit("addWrongAnswerToTeam", { questionPath:questionPath, username: props.route.params.username, gameName: props.route.params.gameName, teamName: props.route.params.teamName }, (x, y) => {
-                    ShowAlertLost();
+                    if(x>3){
+                        ShowAlertLost();
+                    }
+                    else{
+                        ShowAlertWrong()
+                    }
+                    
                 })
+                
             }
-            // if(showWin)
-            //     ShowAlert33()
-
         }
     
 
-    // const getGeometry = async (iso) =>{
+    const getGeometry = async (iso) =>{
         
-    //     let userToken =  await AsyncStorage.getItem('userToken');
-    //     let options = {
-    //         method: 'POST',
-    //         url: "http://10.0.0.8:3001/getGeo",
-    //         headers: {
-    //             'Accept': 'application/json',
-    //             'Content-Type': 'application/json;charset=UTF-8',
-    //             'Auth': userToken
-    //         },
-    //         data: {
-    //             iso: iso,
+        let userToken =  await AsyncStorage.getItem('userToken');
+        let options = {
+            method: 'POST',
+            url: "http://54.161.154.243/getGeo",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Auth': userToken
+            },
+            data: {
+                iso: iso,
                 
-    //         }
-    //     };
-    //     try{
-    //         console.log("beforeee get  polygon from serverrrrrrr")
-    //     let response = await axios(options);
-    //     //console.log("after get  polygon from serverrrrrrr")
-    //     let responseOK = response && response.status === 200;
-    //     if (responseOK) {
-    //         let data = await response.data;
-    //         //console.log("geommmmetry from server", data)
-    //         return data
-    //     }
-    // }catch (error){
-    //     if(error.response && error.response.data && error.response.data=="token invalid"){
-    //         await getNewToken()
-    //         await getGeometry()
-    //     }
-    // }}
+            }
+        };
+        try{
+        let response = await axios(options);
+        let responseOK = response && response.status === 200;
+        if (responseOK) {
+            let data = await response.data;
+            return data
+        }
+    }catch (error){
+        if(error.response && error.response.data && error.response.data=="token invalid"){
+            await getNewToken()
+            await getGeometry(iso)
+        }
+    }}
 
 
     const onAddedCountryToTeam = async (x)=>{
         var countryISO = lookup.countries({ name: x["country"] })[0]["alpha3"];
-        let countryPolygon = contriesData["features"].find(stateObj => {
-            return stateObj["properties"]["ISO_A3"] === countryISO
-        })
-        //let countryPolygon = await getGeometry(countryISO)
+        let countryPolygon = await getGeometry(countryISO)
         setTeamsTerritories(prevData => {
-            // Find the index of the element with the specified name
             const index = prevData.findIndex(item => item.name === x.team);
             if (index !== -1) {
-              // If the element is found, update its occupiedCo array
               const updatedElement = { ...prevData[index],
                  occupiedCountries:[...prevData[index].occupiedCountries, countryPolygon],
                  teamPoints: prevData[index].teamPoints+ x.countryPoints,
                  color: prevData[index].color?prevData[index].color:x.color};
               return [...prevData.slice(0, index), updatedElement, ...prevData.slice(index + 1)];
             } else {
-              // If the element is not found, add a new element to the state variable
               return [...prevData, { name:x.team, color:x.color, occupiedCountries: [countryPolygon], teamPoints: x.countryPoints}];
             }
           })
     }
 
-    // const onAddedCountryToTeam = async (x)=>{
-    //     var countryISO = lookup.countries({ name: x["country"] })[0]["alpha3"];
-    //     let countryPolygon = await getGeometry(countryISO)
-    //     if (x["team"] == props.route.params.teamName && !states.includes(countryPolygon)) {
-    //         setStates([...states, countryPolygon]);
-    //         setPoints(points + x["countryPoints"])
-    //         if (!color) {
-    //            // console.log("hii colooorrrr - ", color)
-    //             setColor(x["color"])
-    //         }
-    //     }
-    //     else {
-
-    //         if (!rivalStates.includes(countryPolygon)) {
-    //             //setRivalStates([...rivalStates, countryPolygon]);
-
-    //             setRivalStates(prevData => {
-    //                 const index = prevData.findIndex(item => item.name === x["team"]);
-    //                 if (index !== -1) {
-    //                     const updatedElement = { ...prevData[index], occupiedCountries: [...prevData[index].occupiedCountries, countryPolygon] };
-    //                     return [...prevData.slice(0, index), updatedElement, ...prevData.slice(index + 1)];
-    //                 } else {
-    //                     return [...prevData, { name: x["team"], color: x["color"], occupiedCountries: [countryPolygon] }];
-    //                 }
-    //             })
-
-
-    //             //setRivals([...rivals, x["country"]])
-    //         }
-
-    //     }
-    // }
-
-    
-
+   
     const getOriginsCountries = async () => {
         let userToken =  await AsyncStorage.getItem('userToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/getTerritories",
+            url: "http://54.161.154.243/getTerritories",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -347,17 +282,11 @@ export const Map2 = (props) => {
             for (let i = 0; i < territories.length && territories[i]["occupiedCountries"].length>0; i++) {
                 territories[i]["occupiedCountries"] = await Promise.all(territories[i]["occupiedCountries"].map(async (cntry)=>{
                     var countryISO = lookup.countries({ name: cntry["country"] })[0]["alpha3"];
-                    //console.log("ISEEEEEPOOOOOOOOOO", countryISO)
-                    let countryPolygon = contriesData["features"].find(stateObj => {
-                        return stateObj["properties"]["ISO_A3"] === countryISO
-                    })
-                    //let countryPolygon = await getGeometry(countryISO)
-                    //console.log("POOOLLLLLYYYGOGOGOGNGNGGNNGNG", countryPolygon)
+                   
+                    let countryPolygon = await getGeometry(countryISO)
                     return countryPolygon;
                 }))
-                //territories[i]["occupiedCountries"]["names"] = territories[i]["occupiedCountries"].map(cntry=>{return cntry["country"] })
             }
-            //console.log("territtttttttttt", territories)
             setTeamsTerritories(territories);
         }}
         catch (error){
@@ -370,22 +299,11 @@ export const Map2 = (props) => {
    
     const onUseLayoutEffect = async () =>{
         getOriginsCountries()
-        // if (props.route.params.originCountry) {
-        //     var countryISO = lookup.countries({ name: props.route.params.originCountry })[0]["alpha3"];
-        //     let countryPolygon = await getGeometry(countryISO)
-        //     if (!states.includes(countryPolygon)) {
-        //         setStates([...states, countryPolygon]);
-        //         socket.emit("startGame", { gameName: props.route.params.gameName, originCountry: props.route.params.originCountry, occupiedCountry: props.route.params.originCountry })
-        //     }
-        // }
-        // setStart(true);
-
     }
 
     React.useEffect(() => {
 
         if (prevDeletedGames.current !== deletedGames) {
-            //console.log("prevvvvvvvvvvvvvvv", prevDeletedGames, deletedGames)
 
             prevDeletedGames.current = deletedGames;
             props.navigation.navigate("Login",{school:props.route.params.school, username: props.route.params.username, role:"student"})
@@ -403,7 +321,6 @@ export const Map2 = (props) => {
                     socket.emit("addWrongAnswerToTeam", { questionPath:questionPath, username: props.route.params.username, gameName: props.route.params.gameName, teamName: props.route.params.teamName }, (x, y) => {
                         ShowAlertLost();
                     })
-                   // console.log("timeLeft", timeLeft, modalVisible)
                     toggleModal(!modalVisible)
                 }
             }, 1000);
@@ -411,30 +328,18 @@ export const Map2 = (props) => {
         socket.on("winner", (x) => {
             if (x == props.route.params.teamName) {
                 setShowWin(true);
-                // if(!showAlert3)
-                //     ShowAlert33();
+               
                 ShowAlertWin()
             }
         })
         socket.on("lostCountries", (x) => {
             if (x["lostTeams"].includes(props.route.params.teamName)) {
-                if (x["winners"].length != 0 && x["winners"].length == 1) {
-                    if (!sentToWinner) {
-                        socket.emit("sendToWinner", { gameName: props.route.params.gameName, winner: x["winners"][0] })
-                        setSentToWinner(true)
-                    }
-                }
+                
                 ShowAlertLost();
             }
         })
         socket.on("stopedGame", (x) => {
             if (x["lostTeams"].includes(props.route.params.teamName)) {
-                // if (x["winners"].length != 0 && x["winners"].length == 1) {
-                //     if (!sentToWinner) {
-                //         socket.emit("sendToWinner", { gameName: props.route.params.gameName, winner: x["winners"][0] })
-                //         setSentToWinner(true)
-                //     }
-                // }
                 ShowAlertLost();
             }
             if (x["winners"].includes(props.route.params.teamName)) {
@@ -454,16 +359,11 @@ export const Map2 = (props) => {
     })
 
     React.useLayoutEffect( () => {
-        //console.log("rivvaaaakkkkkllll", rivalStates, states)
         onUseLayoutEffect()
 
     }, [])
     const toggleModal = (visible) => {
         setStartTime(!startTime);
-
-        // if(!startTime){
-        //     setTimeLeft(5)
-        // }
         setModalVisible(visible);
     }
 
@@ -473,7 +373,7 @@ export const Map2 = (props) => {
         let userToken =  await AsyncStorage.getItem('userToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/isNeighborCountry",
+            url: "http://54.161.154.243/isNeighborCountry",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -514,15 +414,13 @@ export const Map2 = (props) => {
             }
         }
     }catch (error){
-       // console.log("errror", error)
             if (error.response) {
-                if (error.response && error.response.data == "token invalid") {
+                if (error.response && error.response.data && error.response.data == "token invalid") {
                     await getNewToken()
-                    await getQuestion()
+                    await getQuestion(countryName)
                 }
             }
             else {
-             //   console.log(error.response)
             }
     }
     }
@@ -549,92 +447,26 @@ export const Map2 = (props) => {
             <MapView style={styles.map} region={region} scrollEnabled={false}  userInterfaceStyle={'dark'} mapType={'hybrid'}
   
                 onPress={async (e) => {
-                    setTimeLeft(5)
+                    setTimeLeft(60)
                     e.persist();
                     let address = await Location.reverseGeocodeAsync(e.nativeEvent.coordinate, { lang: "en" });
                     var countryName = lookup.countries({ alpha2: address[0]["isoCountryCode"] })[0]["name"];
                     setCntryName(countryName);
                     //let countryName = address[0]["country"];
                     let countryCode = convertIso2Code(address[0]["isoCountryCode"])["iso3"];
-                    //let countryName = convertIso2Code(address[0]["isoCountryCode"])["iso3"];
-                    //let countryPolygon = getGeometry(countryCode)
-                    //this.setState({markers: [...this.state.markers, { latlng: e.nativeEvent.coordinate }], states: [...this.state.states, countryPolygon] });
-                    //this.setState({markers: [...this.state.markers, { latlng: e.nativeEvent.coordinate }]});
+                    
                     let legalCountry = await getQuestion(countryName)
                     if (legalCountry) {
                         toggleModal(!modalVisible)
-                        // socket.emit("addCountryToTeam", { gameName: props.route.params.gameName, originCountry: props.route.params.originCountry, occupiedCountry: countryName }, (x, y) => {
-                        //     var countryISO = lookup.countries({ name: x["country"] })[0]["alpha3"];
-                        //     let countryPolygon = contriesData["features"].find(stateObj => {
-                        //         return stateObj["properties"]["ISO_A3"] === countryISO
-                        //     })
-                        //     setStates([...states, countryPolygon]);
-                        //     // if(y["winners"].length !=0 && y["winners"].length==1 && y["winners"].includes(props.route.params.originCountry)){
-                        //     //     setEndGame( true)
-
-                        //     //     ShowAlert();
-                        //     // }
-
-                        // });
+                        
                     }
                 }}>
                 {
-                    // // loop through markers array & render all markers
-                    // this.state.markers.map((marker, i) => (
-                    //     <Marker coordinate={marker.latlng} key={i} />
-                    // ))
-
+                    
                 }
-
-
-
-
-
-                {/* {color ? <Geojson
-                    geojson={{
-                        type: 'FeatureCollection',
-                        features: states
-                    }}
-                    strokeColor="white"
-                    fillColor={color}
-                    strokeWidth={2}
-                /> : ""} */}
-
-
-
-
-                {/* <Geojson
-                    geojson={{
-                        type: 'FeatureCollection',
-                        features: rivalStates
-                    }}
-                    strokeColor="red"
-                    fillColor= {"blue"}
-                    strokeWidth={2}
-                /> */}
-
-
-
-
-                {/* {rivalStates.map(country => {
-                    //console.log("countrrryyryryryryryryryry", typeof(country))
-                    return (
-                        <Geojson
-                            geojson={{
-                                type: 'FeatureCollection',
-                                features: country["occupiedCountries"]
-                            }}
-                            strokeColor="white"
-                            fillColor={country.color}
-                            strokeWidth={2}
-                        />
-                    )
-                })} */}
-
 
             { teamsTerritories.map((country, index) =>{
                     if (country["occupiedCountries"] && country["occupiedCountries"].length > 0) {
-                        console.log("lengthhhhhhhhhhhhh colooooorrrr", country.color, country["occupiedCountries"].length, country.name, country.name)
                         return (
                             <Geojson
                                 key={index}
@@ -650,8 +482,6 @@ export const Map2 = (props) => {
                     }
             } 
             )}     
-
-
 
             </MapView>
             <AwesomeAlert
@@ -694,14 +524,8 @@ export const Map2 = (props) => {
                 }}
                 onConfirmPressed={() => {
                     hideAlertLost();
-                  //  console.log("hiiiii before call fetch groups in map2222")
                     setDeletedGames((prevDeletedGames) => [...prevDeletedGames, props.route.params.gameName]);
-                 //   console.log("deletedGameeesssssssssLooooosssssstttttt", deletedGames)
-
-                    // props.route.params.fetchGroups()
-                    //props.navigation.navigate("Settings", { username: props.route.params.username });
-                    // props.navigation.navigate("GroupSelection",{school:props.route.params.school, username: props.route.params.username, role:"student"})
-
+                 
                 }}
             />
 
@@ -722,9 +546,6 @@ export const Map2 = (props) => {
                 }}
                 onConfirmPressed={() => {
                     hideAlertMissing();
-
-                    
-
                 }}
             />
 
@@ -745,9 +566,6 @@ export const Map2 = (props) => {
                 }}
                 onConfirmPressed={() => {
                     hideAlertQuestion();
-
-                    
-
                 }}
             />
             <AwesomeAlert
@@ -767,9 +585,6 @@ export const Map2 = (props) => {
                 }}
                 onConfirmPressed={() => {
                     hideAlertWrong();
-
-                    
-
                 }}
             />
 
@@ -820,11 +635,8 @@ export const Map2 = (props) => {
                 onConfirmPressed={() => {
                     hideAlertWin();
                     socket.emit("deleteGame", { gameName: props.route.params.gameName })
-                    //props.navigation.navigate("Settings", { username: props.route.params.username });
-                    // props.route.params.fetchGroups()
+                    
                     setDeletedGames((prevDeletedGames) => [...prevDeletedGames, props.route.params.gameName]);
-                  //  console.log("deletedGameeesssssssss", deletedGames)
-                    // props.navigation.navigate("GroupSelection",{school:props.route.params.school, username: props.route.params.username, role:"student"})
 
                 }}
             />

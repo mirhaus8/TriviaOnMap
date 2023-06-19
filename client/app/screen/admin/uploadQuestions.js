@@ -56,12 +56,9 @@ export const UploadQuestion = (props) => {
 
             const imageRef = ref(storage, "images/your_name3.jpg")
             const result = await uploadBytes(imageRef, blobFile)
-            // const url = await getDownloadURL(result.ref)
-
-            // return url
+            
         } catch (err) {
-           // console.log("errror");
-            // return Promise.reject(err)
+           
         }
 
     }
@@ -69,10 +66,9 @@ export const UploadQuestion = (props) => {
 
     const getNewToken = async () => {
         let userRefreshToken = await AsyncStorage.getItem('userRefToken');
-        //console.log("refresh tokennnn", userRefreshToken)
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/token",
+            url: "http://54.161.154.243/token",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -80,14 +76,10 @@ export const UploadQuestion = (props) => {
             },
 
         };
-        try {
-            //console.log("in get refresh token")
-            let response = await axios(options);
-          //  console.log("responseOk refreshToken", response.status)
-            let responseOK = response && response.status === 200;
-            //console.log("responseOk refreshToken", responseOK)
-            if (responseOK) {
-              //  console.log("in get refresh token", response.data.accessToken)
+        try {          
+            let response = await axios(options);         
+            let responseOK = response && response.status === 200;          
+            if (responseOK) {             
                 await setTokens(response.data.accessToken)
             }
         } catch { }
@@ -97,7 +89,7 @@ export const UploadQuestion = (props) => {
         let userToken = await AsyncStorage.getItem('userToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/submitTeams",
+            url: "http://54.161.154.243/submitTeams",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -110,15 +102,15 @@ export const UploadQuestion = (props) => {
         };
         try {
             let response = await axios(options);
-         //   console.log(response);
-            let responseOK = response && response.status === 200 && response.statusText === 'OK';
+            let responseOK = response && response.status === 200 ;
             if (responseOK) {
                 let data = await response.data;
+                props.navigation.navigate("GroupSelection", { school: props.route.params.school, role: props.route.params.role, gameName: props.route.params.gameName, username: props.route.params.username }) 
                 socket.emit("joinUserToGame", { "gameName": props.route.params.gameName });
 
             }
         } catch (error) {
-            if (error.response.data == "token invalid") {
+            if (error.response && error.response.data && error.response.data == "token invalid") {
                 await getNewToken()
                 await submit()
             }
@@ -126,11 +118,10 @@ export const UploadQuestion = (props) => {
     };
 
     const getUsers = async () => {
-        //console.log("in choooooseeee")
         let userToken = await AsyncStorage.getItem('userToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/getAllUsers",
+            url: "http://54.161.154.243/getAllUsers",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -138,30 +129,19 @@ export const UploadQuestion = (props) => {
             },
             data: { role: props.route.params.role }
         };
-        //console.log("choooseeeee45345", props.route.params.gameName)
         try {
             let response = await axios(options);
             let responseOK = response && response.status === 200;
             if (responseOK) {
-                //console.log(response.data)
                 const userNames = response.data.map(user => user.name);
                 setUsers(userNames);
-          //      console.log(userNames)
-
-                //let data =  response.data;
-                //loginHandler(data["accessToken"]);
-
-                //console.log("jwtttttt", jwtDecode(userToken));
             }
         } catch (error) {
-            if (error.response.data == "token invalid") {
+            if (error.response && error.response.data && error.response.data == "token invalid") {
                 await getNewToken()
                 await getUsers()
             }
         }
-        // if (response.data != "")
-        //     console.log(data)
-        //props.navigation.navigate("Settings",{username: username})
     };
 
     const renderUserItems = () => {
@@ -175,23 +155,12 @@ export const UploadQuestion = (props) => {
 
     useEffect(() => {
         getUsers();
-        // listAll(imageListRef).then((response) => {
-        //     console.log("responseeee", response)
-        //     response.items.forEach((item) => {
-        //         getDownloadURL(item).then((url) => {
-        //             setImageList((prev) =>
-        //                 [...prev, url]
-        //             )
-        //         })
-        //     })
-        //     console.log("imaaaagggggeeeList", imageList)
-        // })
     }, []);
 
     const fetchGroups = async () => {
         let options = {
             method: 'GET',
-            url: "http://10.0.0.8:3001/games",
+            url: "http://54.161.154.243/games",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8'
@@ -225,10 +194,7 @@ export const UploadQuestion = (props) => {
                         style={{
                             flex: 1,
                             resizeMode: 'cover', opacity: 1
-                        }}>
-
-                    
-                        
+                        }}>                    
                         <View style={styles.chatTopContainer}>
                             <View style={styles.chatHeader}>
                                 <Text style={styles.chatHeading}>Teams Creation</Text>
@@ -256,7 +222,6 @@ export const UploadQuestion = (props) => {
                                 <FlatList
                                     data={teams}
                                     renderItem={({ item }) => <Group2 role={props.route.params.role} school={props.route.params.school} gameName={props.route.params.gameName} teamsMembers={teamsMembers} setTeamsMembers={setTeamsMembers} navigation={props.navigation} item={item} />}
-                                    //keyExtractor={(item) => item._id}
                                     keyExtractor={(item, index) => index.toString()}
                                     contentContainerStyle={{ flexGrow: 1 }}
 
@@ -264,18 +229,12 @@ export const UploadQuestion = (props) => {
                                 </View>
                             ) : (
                                 <View style={styles.chatEmptyContainer}>
-                                    <Text style={styles.chatEmptyText}>No games created!</Text>
+                                    <Text style={styles.chatEmptyText}>No teams created!</Text>
                                     <Text>Click the icon above to create a new Game</Text>
                                 </View>
                             )}
                         </View>
-                        {visible ? <CreateTeam teams={teams} setVisible={setVisible} setTeams={setTeams} /> : ""}
-
-                        
-
-                    
-                
-                {/* <Button title="Select Image" onPress={submit} >Submit Groups</Button> */}
+                        {visible ? <CreateTeam teams={teams} setVisible={setVisible} setTeams={setTeams} /> : ""}                
                 </ImageBackground>
         </SafeAreaView>
        
@@ -293,8 +252,6 @@ const styles = StyleSheet.create({
     chatScreen: {
         backgroundColor: "#F7F7F7",
         flex: 1,
-        // padding: 10,
-        // marginBottom: 50,
         position: "relative",
         flexDirection: 'column',
     },

@@ -11,9 +11,6 @@ import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { authContext } from "../../context/AuthContext";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UploadQuestion } from "./../../components/UploadQuestion";
-import { CreateTeam } from "../../components/CreateTeam";
-import { Todelete } from "../../components/todelete";
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 
@@ -110,7 +107,7 @@ export const PickImages = (props) => {
         let userRefreshToken = await AsyncStorage.getItem('userRefToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/token",
+            url: "http://54.161.154.243/token",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -119,16 +116,11 @@ export const PickImages = (props) => {
 
         };
         try {
-            //console.log("in get refresh token")
             let response = await axios(options);
-            //console.log("responseOk refreshToken", response.status)
             let responseOK = response && response.status === 200;
-            //console.log("responseOk refreshToken", responseOK)
             if (responseOK) {
-              //  console.log("in get refresh token", response.data.accessToken)
                 await setTokens(response.data.accessToken)
                 let userToken = await AsyncStorage.getItem('userToken');
-                //console.log("user token after trying update", userToken)
             }
         } catch { }
     }
@@ -138,7 +130,7 @@ export const PickImages = (props) => {
 
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/addQuestionToGame",
+            url: "http://54.161.154.243/addQuestionToGame",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -155,18 +147,14 @@ export const PickImages = (props) => {
 
         };
         try {
-            //console.log("hi in addquestion before send print game name", props.route.params)
             let response = await axios(options);
             let responseOK = response && response.status === 200;
             if (responseOK) {
                 ShowAlertAddedQuestion()
-              //  console.log("addddminnnnn quuueeee responseOK", responseOK)
-                //props.route.params.setQuestionList([... props.route.params.questionList, response.data._id])
-
 
             }
         } catch (error) {
-            if (error.response.data == "token invalid") {
+            if (error.response && error.response.data && error.response.data == "token invalid") {
                 await getNewToken()
                 await addQuestionToGame(imageIdDefault, tagsToAdd)
             }
@@ -178,7 +166,7 @@ export const PickImages = (props) => {
 
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/addAllQuestionsToGame",
+            url: "http://54.161.154.243/addAllQuestionsToGame",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -195,18 +183,14 @@ export const PickImages = (props) => {
 
         };
         try {
-            //console.log("hi in addquestion before send print game name", options.data.tags)
             let response = await axios(options);
             let responseOK = response && response.status === 200;
             if (responseOK) {
                 ShowAlertAddedQuestion()
-              //  console.log("addddminnnnn quuueeee responseOK", responseOK)
-                //props.route.params.setQuestionList([... props.route.params.questionList, response.data._id])
-
 
             }
         } catch (error) {
-            if (error.response.data == "token invalid") {
+            if (error.response && error.response.data && error.response.data == "token invalid") {
                 await getNewToken()
                 await addAllQuestionsToGame(imageIdDefault, tagsToAdd)
             }
@@ -216,7 +200,7 @@ export const PickImages = (props) => {
     const addTagsToQuestion = async (questionId, tags) => {
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/addQuestionToGame",
+            url: "http://54.161.154.243/addQuestionToGame",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8'
@@ -231,13 +215,11 @@ export const PickImages = (props) => {
         let response = await axios(options);
         let responseOK = response && response.status === 200;
         if (responseOK) {
-            //console.log("addddminnnnn quuueeee responseOK", responseOK)
         };
     }
 
 
     const uploadImage = async () => {
-        //console.log("imageName", imageName, "answer", answer)
         if (image == null) return
         let urlFireBase = null;
         try {
@@ -247,16 +229,14 @@ export const PickImages = (props) => {
             const imageRef = ref(storage, `images/${imageName}.jpg`)
             const result = await uploadBytes(imageRef, blobFile)
             urlFireBase = await getDownloadURL(result.ref)
-          //  console.log("hererere 99", urlFireBase, answer)
+          
             setUrl(urlFireBase)
-            //console.log("urrrrlllllll", url)
+            
 
-            // return url
+            
         } catch (err) {
-            //console.log("errror", err);
-            // return Promise.reject(err)
+            
         }
-        //console.log("hi before addQuestion")
         await addQuestion(urlFireBase, tagUpload)
         setAnswerholder('Enter Answer');
         setNameholder('Image Name')
@@ -273,12 +253,8 @@ export const PickImages = (props) => {
             aspect: [4, 3],
             quality: 1,
         });
-
-        //console.log(result);
-
         if (!result.canceled) {
             setImage(result.assets[0].uri);
-          //  console.log(result, result.assets.length, result.assets[0], "     boom        ", result.assets[0].uri)
         }
     };
 
@@ -288,10 +264,9 @@ export const PickImages = (props) => {
         }
         else{
         let userToken = await AsyncStorage.getItem('userToken');
-        //console.log("ihhihihh in getAdminGqwe")
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/getAllAdminQuestions",
+            url: "http://54.161.154.243/getAllAdminQuestions",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -301,23 +276,16 @@ export const PickImages = (props) => {
                 private: isSwitchOnPrivate, role: props.route.params.role, owner: props.route.params.username, class: grade, difficulty: level, subject: subject, tags: tag.split(',').map(word => word.trim())
             }
         };
-        //console.log("ihhihihh in getAdminGqwe22222")
         try {
-          //  console.log("ihhihihh in getAdminGqwe3333")
             let response = await axios(options);
-            //console.log("ihhihihh in getAdminGqwe344444333")
             let responseOK = response && response.status === 200;
-            //console.log("responnnsnenene get SAdddmidndndndn", responseOK)
             if (responseOK) {
-              //  console.log("addddminnnnn quuueeee", response.data.questions[0].name, response.data.questions.length)
                 const questions = response.data.questions.map(question => [question.name, question.path, question._id]);
                 setImagesList(questions);
-                //console.log("addmiminn shorttt", questions)
 
             }
         } catch (error) {
-            if (error.response.data == "token invalid") {
-                //console.log("why the token is invalid", userToken)
+            if (error.response && error.response.data && error.response.data == "token invalid") {
                 await getNewToken()
                 await getAdminQuestions()
             }
@@ -328,10 +296,9 @@ export const PickImages = (props) => {
     const addQuestion = async (urlFireBase, tagsToAdd = "") => {
         let userToken = await AsyncStorage.getItem('userToken');
 
-        console.log("parameter in addQuestion", urlFireBase)
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/addQuestion",
+            url: "http://54.161.154.243/addQuestion",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -353,39 +320,19 @@ export const PickImages = (props) => {
             let response = await axios(options);
             let responseOK = response && response.status === 200;
             if (responseOK) {
-          //      console.log("addddminnnnn quuueeee responseOK", responseOK, response.data._id, questionList)
-                //props.route.params.setQuestionList([... props.route.params.questionList, response.data._id])
-                // setQuestionList(prevState => {
-
-                //     console.log("hi in setQuestion222", questionList)
-                //     console.log("hi in setQuestion", prevState, [...prevState, response.data._id])
-                //     return [...prevState, response.data._id];
-
-                // });
+          
                 setImgId(response.data._id)
 
                 addQuestionToGame(response.data._id)
-            //    console.log("addddminnnnn quuueeee responseOK afterrrr", questionList)
 
             }
         } catch (error) {
-            if (error.response.data == "token invalid") {
+            if (error.response && error.response.data && error.response.data == "token invalid") {
                 await getNewToken()
                 await addQuestion(urlFireBase, tagsToAdd )
             }
         }
     }
-
-
-    // const toggleModal = (visible) =>{
-    //     props.setModalVisible(visible);
-    // }
-
-
-    // useEffect(() => {
-    //     if (grade != "" && subject != "" && level != "")
-    //         getAdminQuestions()
-    // }, [grade, subject, level])
 
 
     return (
@@ -539,8 +486,6 @@ export const PickImages = (props) => {
                                             }}
                                             defaultButtonText={'Image Name'}
                                             rowTextForSelection={(item, index) => {
-                                                // text represented for each item in dropdown
-                                                // if data array is an array of objects then return item.property to represent item in dropdown
                                                 return item[0]
                                             }}
                                         />
@@ -593,8 +538,6 @@ export const PickImages = (props) => {
                     </View>
                    
                     <View style={styles.secondContent}>
-                    {/* <View> */}
-                    {/* <UploadQuestion setUrl={setUrl} addQuestion={addQuestion}/> */}
                         <View style={styles.group}>
                             <View style={{ display: "flex", flex: 1, marginRight: 10 }}>
                                 <Button onPress={pickImage} style={{ backgroundColor: 'green' }} mode="contained">Select Image</Button>
@@ -634,16 +577,8 @@ export const PickImages = (props) => {
                                 <Button onPress={uploadImage} style={{ backgroundColor: 'green' }} mode="contained"> Upload Image</Button>
                             </View>
                         </View>
-                        {/* <CreateTeam></CreateTeam> */}
-                        {/* <UploadQuestion setUrl={setUrl} addQuestion={addQuestion}></UploadQuestion> */}
-                        {/* <Todelete></Todelete> */}
                     </View>
                 </View>
-                {/* {visibleUp? <View style={styles.container}>
-      <View style={styles.content2}>
-      <Todelete setUrl={setUrl} addQuestion={addQuestion} setVisibleUp={setVisibleUp}></Todelete>
-      </View>
-    </View>:""} */}
             </ScrollView>
         </SafeAreaView>
     )

@@ -18,20 +18,15 @@ export const AuthProvider = ({ userTokenn, setUserTokenn, children }) => {
     }
 
     const setTokens =async(token)=>{
-        //console.log("befire se1111111111 tokeennnn", token)
 
-        //console.log("befire setttt tokeennnn", userToken)
         setUserToken(token);
         setUserTokenn(token)
-        //console.log("afterr settt tokennnn", userToken)
         await AsyncStorage.setItem('userToken', token);
         let u=await AsyncStorage.getItem('userToken');
-        //console.log("userTolllfkflflekekeke", u)
     }
 
 
     const logout = () =>{
-        //console.log("hiiiihhhh in logout")
         setUserToken(null);
         setUserRefreshToken(null)
         setUserTokenn(null)

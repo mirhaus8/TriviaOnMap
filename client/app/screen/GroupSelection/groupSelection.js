@@ -26,22 +26,19 @@ export const GroupSelection = (props) => {
     const [group, setGroup] = React.useState("");
     const { deletedGames, setDeletedGames } = useContext(MyContext);
 
-    //const [questionList, setQuestionList] = React.useState([]);
 
     const onToggleCountry = (country) => {
         socket.emit("createTeam", { "gameName": group, "name": "", "originCountry": country["country"], "username": props.route.params.username, "members": [props.route.params.username] });
-        //setVisible(false)
         setCountryVisible(false)
     };
     const play = () => { console.log("hiii before navigate"); props.navigation.navigate("Map2", { role: props.route.params.role, school: props.route.params.school, username: props.route.params.username, gameName: group, originCountry: originCountry }) };
     function handleSelection(country) {
-       // console.log(country);
+       
         setOriginCountry(country["country"]),
             onToggleCountry(country);
     }
 
     const createTeams = (gameName) => {
-       // console.log("in groooououououp", group, props.route.params)
         setCountryVisible(false);
         props.navigation.navigate("UploadQuestion", { school: props.route.params.school, role: props.route.params.role, username: props.route.params.username, gameName: gameName })
     }
@@ -52,7 +49,7 @@ export const GroupSelection = (props) => {
         let userRefreshToken = await AsyncStorage.getItem('userRefToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/token",
+            url: "http://54.161.154.243/token",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -60,14 +57,10 @@ export const GroupSelection = (props) => {
             },
             
         };
-        try {
-            //console.log("in get refresh token")
-            let response = await axios(options);
-         //   console.log("responseOk refreshToken", response.status)
-            let responseOK = response && response.status === 200;
-         //   console.log("responseOk refreshToken", responseOK)
+        try {          
+            let response = await axios(options);        
+            let responseOK = response && response.status === 200;     
             if (responseOK) {
-          //      console.log("in get refresh token",response.data.accessToken)
                 await setTokens(response.data.accessToken)
             }
         }catch{}
@@ -85,7 +78,7 @@ export const GroupSelection = (props) => {
         let userToken =  await AsyncStorage.getItem('userToken');
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/games",
+            url: "http://54.161.154.243/games",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -96,33 +89,25 @@ export const GroupSelection = (props) => {
             }
         };
         try {
-          //  console.log("token in getGamessssssss", userToken)
             let response = await axios(options);
-
             let responseOK = response && response.status === 200;
             if (responseOK) {
                 setRooms(response.data.filter((obj) => !deletedGames.includes(obj.name)))
             }
             else {
-         //       console.log("response.data", response.data)
             }
         } catch (error){
-            if(error.response.data=="token invalid"){
-           //     console.log("hi got invalid token")
+            if(error.response && error.response.data && error.response.data=="token invalid"){
                 await getNewToken()
                 await fetchGroups()
             }
-         //   console.log("response.dataaaa", error.response.data)
         }
 
     };
     React.useLayoutEffect(() => {
         
-       // console.log("hiiiii in useLay groupSelection11111111 ", user["user"], user["role"])
         fetchGroups();
-      //  console.log("hiiiii in useLay groupSelection ", user["user"], user["role"])
         socket.on("gamesList", (rooms2) => {
-//console.log("roooommmmsss layout", rooms2)
             setRooms(rooms2.filter((obj) => !deletedGames.includes(obj.name)));
         });
         
@@ -130,9 +115,7 @@ export const GroupSelection = (props) => {
 
 
     React.useEffect(() => {
-       // console.log("hiiiii in useEffect groupSelection ")
         socket.on("gamesList", (rooms2) => {
-         //   console.log("roooommmmsss effect", rooms2.filter((obj) => !deletedGames.includes(obj.name)))
             setRooms(rooms2.filter((obj) => !deletedGames.includes(obj.name)));
             fetchGroups();
         });
@@ -195,16 +178,6 @@ export const GroupSelection = (props) => {
                 </View>
             </Modal>
             <View >
-                {/* <Button
-                    onPress={play}
-                    mode="contained">
-                    Play
-                </Button> */}
-                {/* <Button
-                    onPress={logout}
-                    mode="contained">
-                    logout
-                </Button> */}
             </View>
             </ImageBackground>
         </SafeAreaView>
@@ -223,7 +196,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#F7F7F7",
         flex: 1,
         padding: 10,
-        position: "relative"
+        position: "relative",
+        
     },
     chatTopContainer: {
         backgroundColor: "#F7F7F7",

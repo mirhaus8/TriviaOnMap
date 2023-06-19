@@ -35,10 +35,9 @@ export const LoginScreen = (props) => {
     const [error, setError] = React.useState(null);
     const register = () => props.navigation.navigate("Register");
     const login = async (username, password) => {
-        //console.log("hiiii login")
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/login",
+            url: "http://54.161.154.243/login",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8'
@@ -56,30 +55,21 @@ export const LoginScreen = (props) => {
             let responseOK = response && response.status === 200;
             if (responseOK) {
                 let data = response.data;
-                //console.log("login res", data)
-                //console.log("jwtttttt", jwtDecode(data["accessToken"]));
+                
                 setUserToken(data["accessToken"])
                 setUser(jwtDecode(data["accessToken"]))
                 loginHandler(data["accessToken"], data["refreshToken"])
-                //console.log("before navigate to group selection")
                 props.navigation.navigate("GroupSelection", { school: data["school"], username: username, role: data["role"] })
-
-
-                //console.log("jwtttttt", jwtDecode(userToken));
             }
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 const errorMessage = error.response.data;
-                //console.log("loginError", errorMessage)
+                
                 setError("Invalid credentials", errorMessage);
             } else {
-                // Handle other errors
                 setError("Something went wrong");
             }
         }
-        // if (response.data != "")
-        //     props.navigation.navigate("Settings",{username: username})
-
     };
     const toggleVisible = () => {
         setVisible(false);
@@ -92,10 +82,6 @@ export const LoginScreen = (props) => {
             resizeMode: 'cover',opacity: 1}}>
         <SafeAreaView style={loginStyle.content}>
             <View style={loginStyle.view}>
-                {/* <Tab.Navigator>
-                    <Tab.Screen name="feed" component={RegisterScreen}></Tab.Screen>
-
-                </Tab.Navigator> */}
                 <Card style={{backgroundColor: "#f4decb"}}>
                     <Card.Title
                         title="Conquer The World"

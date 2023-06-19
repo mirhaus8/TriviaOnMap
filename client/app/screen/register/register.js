@@ -27,7 +27,7 @@ export const RegisterScreen = (props) => {
     const register = async () => {
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/register",
+            url: "http://54.161.154.243/register",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8'
@@ -42,7 +42,6 @@ export const RegisterScreen = (props) => {
         };
         try {
         let response = await axios(options);
-      //  console.log(response);
         let responseOK = response && response.status === 200;
         if (responseOK) {
             let data = await response.data;
@@ -50,10 +49,8 @@ export const RegisterScreen = (props) => {
         }
     }catch (error) {
         if (error.response && error.response.status === 409) {
-          //  console.log("errorrrrrrrrr in registerationnnnn2222222", error)
             setError('Username already exists');
         } else {
-         //   console.log("errorrrrrrrrr in registerationnnnn", error)
             setError('Registration failed');
         }
 

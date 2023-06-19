@@ -24,10 +24,9 @@ export const GameSummary = (props) => {
 
     const getNewToken = async () => {
         let userRefreshToken = await AsyncStorage.getItem('userRefToken');
-        //console.log("in getnewToken in game summary",userRefreshToken)
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/token",
+            url: "http://54.161.154.243/token",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -36,13 +35,9 @@ export const GameSummary = (props) => {
             
         };
         try {
-            //console.log("in get refresh token")
             let response = await axios(options);
-          //  console.log("responseOk refreshToken", response.status)
             let responseOK = response && response.status === 200;
-            //console.log("responseOk refreshToken", responseOK)
             if (responseOK) {
-              //  console.log("in get refresh token",response.data.accessToken)
                 await setTokens(response.data.accessToken)
             }
         }catch{}
@@ -51,11 +46,9 @@ export const GameSummary = (props) => {
 
     const getAnsweredQuestions = async (gameName) => {
         let userToken =  await AsyncStorage.getItem('userToken');
-        //console.log("hiii game summary")
-        //console.log("hiiii login")
         let options = {
             method: 'POST',
-            url: "http://10.0.0.8:3001/getAnsweredQuestions",
+            url: "http://54.161.154.243/getAnsweredQuestions",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8',
@@ -71,8 +64,6 @@ export const GameSummary = (props) => {
         let responseOK = response && response.status === 200;
         if (responseOK) {
             let data = response.data;
-          //  console.log("game Summary", data["questions"])
-
 
             const transformedAnsweredData = data["questions"].reduce((acc, curr) => {
                 const { username, team, questionPath } = curr;
@@ -85,22 +76,11 @@ export const GameSummary = (props) => {
                 return acc;
             }, []);
 
-
-            // const transformedData = [];
-            // data["questions"].forEach(question => {
-            //     const { username, team, questionPath } = question;
-            //     if (!transformedData[username]) {
-            //         transformedData[username] = { team, questionPaths: [questionPath] };
-            //     } else {
-            //         transformedData[username].questionPaths.push(questionPath);
-            //     }
-            // });
-            //console.log("game Summary", transformedAnsweredData)
             setAnsweredQuestions(transformedAnsweredData)
 
         }
     }catch (error){
-        if(error.response.data=="token invalid"){
+        if(error.response && error.response.data && error.response.data=="token invalid"){
             await getNewToken()
             await getAnsweredQuestions(gameName)
         }
@@ -112,33 +92,15 @@ export const GameSummary = (props) => {
         getAnsweredQuestions(props.gameName);
     }, []);
 
-    // const onImageSelect = (questions, selectedItem, index) => {
-
-    //     const selectedFile = questions[index];
-    //     console.log("hiiiiiii selected item",selectedFile)
-    //     // setImageVisible(true)
-    //     // setImage(selectedFile.fullPath); 
-    //   }
-
     const renderQuestions = (questions) => {
-       // console.log(questions)
         return (
             <View>
-                {/* <TouchableHighlight style={styles.touchableButton}
-                            onPress={() => {setDropVisible(true)}}>
-                                <Text style={styles.text}>Select</Text>
-                            </TouchableHighlight> */}
+                
                 {dropVisible ? <SelectDropdown
 
                     data={questions.map(file => file.fileName)}
                     onSelect={(selectedItem, index) => {
-                        // setImageVisible(true)
-                        // setImage(questions[index].fullPath); 
-                      //  console.log("questionnnnnnnn", selectedItem.substring(selectedItem.lastIndexOf("/") + 1))
-                        //onImageSelect(selectedItem, index)
-                        // setDropVisible(false)
-
-
+                    
                     }}
                     defaultButtonText="Select"
                     buttonTextAfterSelection={(selectedItem) => selectedItem.substring(selectedItem.lastIndexOf("/") + 1)}
@@ -160,17 +122,11 @@ export const GameSummary = (props) => {
 
     return (
         <Modal animationType={"slide"} transparent={true} visible={props.summaryVisible} onRequestClose={() => { console.log("Modal has been closed.") }}>
-            {/* <View style={styles.modal}> */}
             <View style={styles.container}>
-                {/* <Table borderStyle={{borderWidth: 1, borderColor: '#ffa1d2'}}>
-          <Row data={[['Head1', 'Head2', 'Head3', 'Head4', 'Head5']]} style={styles.HeadStyle} textStyle={styles.TableText}/>
-          <Rows data={data} textStyle={styles.TableText}/>
-        </Table> */}
+                
 
-                {/* <Text>hiiiiiiiii3434</Text> */}
                 <Table borderStyle={{ borderWidth: 1, borderColor: '#ffa1d2' }}>
                     <Row data={['Username', 'Team', ' Number Questions answered']} style={styles.head} />
-                    {/* <Rows data={data} /> */}
                     <TableWrapper style={styles.wrapper}>
                         <Col
                             data={answeredQuestions.map((row) => row.username)}
@@ -178,12 +134,7 @@ export const GameSummary = (props) => {
                             heightArr={[70, 70]}
                             // textStyle={styles.text}
                         />
-                        {/* <Col
-                        data={answeredQuestions.map((row) => renderQuestions(row.questionPath))}
-                        style={styles.title}
-                        heightArr={[70, 70]}
-                        textStyle={styles.text}
-                    /> */}
+                        
                         <Col
                             data={answeredQuestions.map((row) => row.team)}
                             style={styles.title}
