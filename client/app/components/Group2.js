@@ -139,11 +139,122 @@ export const Group2 = (props) => {
 
                 <View style={styles.rightContainer}>
                     <View>
-                        <Text style={styles.username}>{props.item}</Text>
+                        <Text style={styles.username}>Team Name: {props.item}</Text>
                     </View>
                 </View>
             </View>
-            <View style={{ flex: 0.2, display: "flex", flexDirection: 'row', marginBottom: 2 }}>
+            <View style={{ flex: 1, display: "flex", flexDirection: 'row' }}>
+                <View style={{ flex: 1, display: "flex", flexDirection: 'column' }}>
+                    <View style={styles.multipleSelectorContainer}>
+                        <SelectDropdown
+                            data={classes}
+                            onSelect={(selectedItem, index) => {
+                                setGrade(selectedItem);
+                                props.setTeamsMembers(prevState => {
+
+                                    const teamToUpdateIndex = prevState.findIndex(team => team.name === props.item);
+                                    if (teamToUpdateIndex === -1)
+                                        return [...prevState, { gameName: props.gameName, name: props.item, grade: selectedItem, subject: "", level: "", members: [] }];
+                                    const updatedTeamMembers = [...prevState];
+                                    const teamToUpdate = updatedTeamMembers[teamToUpdateIndex];
+                                    teamToUpdate.grade = selectedItem;
+                                    return updatedTeamMembers;
+                                });
+                            }}
+                            defaultButtonText={'Class'}
+                            buttonTextAfterSelection={(selectedItem, index) => {
+                                return selectedItem;
+                            }}
+
+                        />
+                    </View>
+                    <View style={styles.multipleSelectorContainer}>
+                        <SelectDropdown
+                            data={users}
+                            onSelect={(selectedItem, index) => {
+                                setSelectedMultiple([...selectedMultiple, selectedItem]);
+                                props.setTeamsMembers(prevState => {
+
+                                    const teamToUpdateIndex = prevState.findIndex(team => team.name === props.item);
+                                    if (teamToUpdateIndex === -1)
+                                        return [...prevState, { gameName: props.gameName, name: props.item, grade: "", subject: "", level: "", members: [selectedItem] }];
+                                    const updatedTeamMembers = [...prevState];
+                                    const teamToUpdate = updatedTeamMembers[teamToUpdateIndex];
+                                    teamToUpdate.members = [...teamToUpdate.members, selectedItem];
+                                    return updatedTeamMembers;
+                                });
+                            }}
+                            defaultButtonText={'Team Members'}
+                            buttonTextAfterSelection={(selectedItem, index) => {
+
+                                return 'Team Members';
+                            }}
+                            rowTextForSelection={(item, index) => {
+                                return item
+                            }}
+                        />
+                    </View>
+                    <View style={styles.multipleSelectorContainer}>
+                        <SelectDropdown
+                            data={levels}
+                            onSelect={(selectedItem, index) => {
+                                setLevel(selectedItem);
+                                props.setTeamsMembers(prevState => {
+
+                                    const teamToUpdateIndex = prevState.findIndex(team => team.name === props.item);
+                                    if (teamToUpdateIndex === -1)
+                                        return [...prevState, { gameName: props.group, name: props.item, grade: "", subject: "", level: selectedItem, members: [] }];
+                                    const updatedTeamMembers = [...prevState];
+                                    const teamToUpdate = updatedTeamMembers[teamToUpdateIndex];
+                                    teamToUpdate.level = selectedItem;
+                                    return updatedTeamMembers;
+                                });
+                            }}
+                            defaultButtonText={'Team Level'}
+                            buttonTextAfterSelection={(selectedItem, index) => {
+                                return selectedItem;
+                            }}
+                            rowTextForSelection={(item, index) => {
+                                return item
+                            }}
+                        />
+                    </View>
+                    <View style={styles.multipleSelectorContainer}>
+                        <SelectDropdown
+                            data={subjects}
+                            onSelect={(selectedItem, index) => {
+                                setSubject(selectedItem);
+                                props.setTeamsMembers(prevState => {
+
+                                    const teamToUpdateIndex = prevState.findIndex(team => team.name === props.item);
+                                    if (teamToUpdateIndex === -1)
+                                        return [...prevState, { gameName: props.group, name: props.item, subject: selectedItem, level: "", members: [] }];
+                                    const updatedTeamMembers = [...prevState];
+                                    const teamToUpdate = updatedTeamMembers[teamToUpdateIndex];
+                                    teamToUpdate.subject = selectedItem;
+                                    return updatedTeamMembers;
+                                });
+                            }}
+                            defaultButtonText={'Subject'}
+                            buttonTextAfterSelection={(selectedItem, index) => {
+                                return selectedItem;
+                            }}
+
+                        />
+                    </View>
+                </View>
+
+
+                <View style={{ flex: 0.65, display: "flex", flexDirection: 'column' }}>
+                    <Text style={styles.username}>Team members:</Text>
+                    <ScrollView>
+                        {selectedMultiple.map((username, index) => (
+                            <Text key={index}>{username}</Text>
+                        ))}
+                    </ScrollView>
+                </View>
+            </View>
+            {/* <View style={{ flex: 0.2, display: "flex", flexDirection: 'row', marginBottom: 2 }}>
                 <SelectDropdown style={{ marginButton: 5 }}
                     data={classes}
                     onSelect={(selectedItem, index) => {
@@ -261,7 +372,7 @@ export const Group2 = (props) => {
 
                     />
                 </View>
-            </View>
+            </View> */}
         </View>
     );
 };
@@ -272,7 +383,7 @@ const styles = StyleSheet.create({
     content: {
         display: "flex",
         flexDirection: 'column',
-        height: (Dimensions.get('window').height) / 2.5,
+        height: (Dimensions.get('window').height) / 1.8,
         marginBottom: 10,
         borderRadius: 5,
         paddingHorizontal: 15,
@@ -282,8 +393,8 @@ const styles = StyleSheet.create({
         width: "100%",
         flexDirection: "row",
         display: "flex",
-        flex: 0.1,
-        marginBottom: 2
+        flex: 0.15,
+        marginBottom: 5
 
 
     },
@@ -320,11 +431,13 @@ const styles = StyleSheet.create({
 
     },
     multipleSelectorContainer: {
+        flex:1,
+        marginRight: 10,
 
-        display: "flex",
-        flex: 1.5,
+        height: 15
 
-        marginRight: 10
-
+    },
+    container: {
+        height: 25, // Set the desired height here
     },
 });

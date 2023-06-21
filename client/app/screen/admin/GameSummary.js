@@ -6,6 +6,8 @@ import { TouchableHighlight } from 'react-native-gesture-handler';
 import { MultipleSelectList } from 'react-native-dropdown-select-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authContext } from '../../context/AuthContext';
+import { Button } from "react-native-paper";
+import socket from "../../../utils/socketio";
 
 
 const axios = require('axios')
@@ -91,76 +93,45 @@ export const GameSummary = (props) => {
     React.useLayoutEffect(() => {
         getAnsweredQuestions(props.gameName);
     }, []);
+    React.useEffect(() => {
+        getAnsweredQuestions(props.gameName);
+    }, [socket]);
 
-    const renderQuestions = (questions) => {
-        return (
-            <View>
-                
-                {dropVisible ? <SelectDropdown
-
-                    data={questions.map(file => file.fileName)}
-                    onSelect={(selectedItem, index) => {
-                    
-                    }}
-                    defaultButtonText="Select"
-                    buttonTextAfterSelection={(selectedItem) => selectedItem.substring(selectedItem.lastIndexOf("/") + 1)}
-                    buttonStyle={styles.questionDropdownButton}
-                    dropdownStyle={styles.questionDropdownList}
-                    dropdownTextStyle={styles.questionDropdownItem}
-                /> : ""}
-
-                {/* <MultipleSelectList
-                            setSelected={(val) => console.log("miltiple", val)}
-                            data={questions.map(file => file.fileName)}
-                            save="value"
-                            
-                        /> */}
-            </View>
-
-        );
-    };
+    
 
     return (
         <Modal animationType={"slide"} transparent={true} visible={props.summaryVisible} onRequestClose={() => { console.log("Modal has been closed.") }}>
             <View style={styles.container}>
                 
 
-                <Table borderStyle={{ borderWidth: 1, borderColor: '#ffa1d2' }}>
+                <Table borderStyle={{ borderWidth: 1, borderColor: 'green' }}>
                     <Row data={['Username', 'Team', ' Number Questions answered']} style={styles.head} />
                     <TableWrapper style={styles.wrapper}>
                         <Col
                             data={answeredQuestions.map((row) => row.username)}
                             style={styles.title}
-                            heightArr={[70, 70]}
-                            // textStyle={styles.text}
+                            heightArr={[30, 30]}
+                            
                         />
                         
                         <Col
                             data={answeredQuestions.map((row) => row.team)}
                             style={styles.title}
-                            heightArr={[70, 70]}
-                            // textStyle={styles.text}
+                            heightArr={[30, 30]}
+                            
                         />
                         <Col
                             data={answeredQuestions.map((row) => row.questionPath.length)}
                             style={styles.title}
-                            heightArr={[70, 70]}
-                            // textStyle={styles.text}
+                            heightArr={[30, 30]}
+                            
                         />
 
                     </TableWrapper>
                 </Table>
-                {/* <Modal animationType={"slide"} transparent={false} visible={imageVisible} onRequestClose={() => { console.log("Modal has been closed.") }}>
-                    <TouchableHighlight style={styles.touchableButton}
-                        onPress={() => { setImageVisible(false) }}>
-                        <Text style={styles.text}>exit</Text>
-                    </TouchableHighlight>
-                </Modal> */}
+                
                 <View style={{ marginTop: 100 }}>
-                    <TouchableHighlight style={styles.touchableButton}
-                        onPress={() => { props.setSummaryVisible(false) }}>
-                        <Text style={styles.text}>Exit Summary</Text>
-                    </TouchableHighlight>
+                            <Button onPress={() => { props.setSummaryVisible(false) }} style={{ color: 'green', backgroundColor: 'green' }} mode="contained"> Exit Summary</Button>
                 </View>
             </View>
             {/* </View> */}
@@ -179,9 +150,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     title: {
-        flex: 1,
-        height: 70,
-        backgroundColor: '#f6f8fa'
+       
+        height: 100,
+        backgroundColor: '#f6f8fa',
+        borderBottomWidth: 1, 
+        borderColor: 'green'
     },
 
     row: {
@@ -206,17 +179,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
 
         width: 100,
-        height: 100,
+        height: 250,
 
         margin: 50,
-        marginTop: 200
+        marginTop: 10
     },
     container: {
         flex: 1,
         padding: 18,
         paddingTop: 100,
         marginBottom: 100,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        height:150
     },
     HeadStyle: {
         height: 50,
@@ -225,5 +199,12 @@ const styles = StyleSheet.create({
     },
     TableText: {
         margin: 10
-    }
+    },
+    touchableButton: {
+        width: '70%',
+        padding: 1,
+        backgroundColor: 'green',
+        marginBottom: 10,
+        marginTop: 10,
+    },
 });

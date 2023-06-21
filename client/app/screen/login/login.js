@@ -126,13 +126,7 @@ export const LoginScreen = (props) => {
                                             : null
 
                                     }
-                                    <Button
-                                        uppercase={false}
-                                        style={loginStyle.cardButton}
-                                        mode="text" textColor="#b07154"
-                                        disabled={values.username == '' || errors.username ? true : false}>
-                                        Forgot password
-                                    </Button>
+                                   
                                     <Button
                                         onPress={handleSubmit}
                                         mode="contained"

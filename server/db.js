@@ -51,35 +51,10 @@ const createGame = async (gameInfo) => {
            
         }
     });
-    //const games = await Game.find();
-    //console.log("gammmess", games);
-
-    // db.collection('games').insertOne(game, (err, result) => {
-    //     if (err) {
-    //         console.log(err);
-    //         return false
-    //     } else {
-    //         let collection = db.collection('games');
-    //         collection.find().toArray(function (err, docs) {
-    //             if (err) {
-    //                 return false;
-    //             } else {
-    //                 return docs;
-    //             }
-    //         });
-    //     }
-
-    // });
-    // let x = await db.collection('games').find().toArray(function (err, docs) {
-    //     if (err) {
-    //         return false;
-    //     } else {
-    //         return docs;
-    //     }
-    // });
+    
 }
 
-const createTeam = async (teamInfo) => {
+const createTeam = async (teamInfo, newTimeLimit) => {
     const NeighborCountry = mongoose.model('neighbor_countries', NeighborCountrySchema);
     let neighborCountry = await NeighborCountry.findOne({ country: teamInfo.originCountry });
 
@@ -105,7 +80,7 @@ const createTeam = async (teamInfo) => {
     else{
     
 
-        Game.updateOne({ gameName: teamInfo.gameName }, { $addToSet: { teams: team, occupiedCountries: teamInfo.originCountry } }, { _id: true, new: true }, (err, result) => {
+        Game.updateOne({ gameName: teamInfo.gameName }, { $addToSet: { teams: team, occupiedCountries: teamInfo.originCountry }, $set: { timeLimit: newTimeLimit } }, { _id: true, new: true }, (err, result) => {
             if (err) {
                 
             } else {
@@ -185,9 +160,7 @@ const checkCountriesLost = async (gameName)=>{
               const teamsWithMaxPoints = teams.filter(team => team.points === maxPoints);
               const teamsWithoutMaxPoints = teams.filter(team => team.points !== maxPoints);
               let lo = teamsWithoutMaxPoints.map(element=>element.name);
-            //   Game.updateOne(
-            //     { gameName:gameName },
-            //     { $push: { losers: { $each: lo } } })
+            
                 Game.updateOne(
                 { gameName:gameName , 'teams.name': { $in: lo } },
                 { $set: { 'teams.$.lost': true } },)
@@ -257,7 +230,7 @@ const register = async (body) => {
           const user = {
               name: body.username,
               password: hashedPassword,
-              role: body.role,
+              role: body.role?body.role:"student",
               school: body.school,
               grade: body.grade,
               friends: []
@@ -271,9 +244,11 @@ const register = async (body) => {
             const result = await User.create(user);
             return { message: 'Ok' };
           } catch (err) {
+            console.log("errrrrrrrrrrororororororororo inregg", err)
             return { message: 'Something went wrong' };
           }
       } catch {
+        console.log("errrrrrrrrrrororororororororo2222222 inregg", err)
         return { message: 'Something went wrong' };
       }
 }
@@ -412,14 +387,12 @@ const getAllGroups = async (body) => {
         const games = await Game.find({ 'teams.users': { $in: [body.username] }, 'ended': false });
         let returnedGames=[]
         for(let i=0;i<games.length;i++){
-            //const team = games[i].teams.find(team => team.users.includes(body.username));
-            //if (team) {
-            //const teamName = team.name;
+            
             const deletedGame = await DeletedGames.findOne({ name: games[i].gameName, users: { $elemMatch: { $eq: body.username } } });
             if(!deletedGame){
                 returnedGames.push(games[i])
             }
-            //}
+          
         }
         return returnedGames
     }
@@ -436,7 +409,6 @@ const endGame= async(gameName)=>{
           }
         }
       );
-    //await Game.deleteOne({gameName:gameName});
 }
 const deleteGame = async(gameName)=>{
     const Game = mongoose.model('Game', GameSchema);
@@ -688,7 +660,6 @@ const getAllAdminQuestions = async (req) =>{
           
           let questions = await Question.find(conditions);
           
-        //let questions = await Question.find({ owner: req.body.owner, class: req.body.class, difficulty: req.body.difficulty, subject: req.body.subject, tags: { $in: req.body.tags }});
         return {questions: questions}
     }
 }catch (error) {
@@ -708,45 +679,6 @@ const answeredQuestions = async (req) =>{
 }
 }
 
-// const getQuestionForRoute = async (req) =>{
-//     const question = {
-//         difficulty: req.body.difficulty,
-//         subjet: req.body.subject
-//     };
-//     let team = await db.collection('games').findOne({ gameName: req.body.gameName, 'teams.originCountry': req.body.originCountry });
-//     //let team = await db.collection('Teams').findOne({ originCountry: req.body.originCountry, gameId: game._id });
-//     const element = team.teams.filter(element => element.originCountry === req.body.originCountry);
-
-
-//     const returnedQuestion = await db.collection('questions').findOne({
-//         _id: { $nin: element[0].usedQuestions }, subjet: req.body.subject
-//     });
-
-
-//     // db.collection('games').updateOne({ gameName: req.body.gameName, 'teams.originCountry': req.body.originCountry }, { '$addToSet': { 'teams.$.usedQuestions': returnedQuestion._id } }, (err, result) => {
-//     //     if (err) {
-//     //         console.log(err);
-//     //         res.sendStatus(400);
-//     //     } else {
-//     //         console.log(`${result.modifiedCount} documents updated getQuestion`);
-//     //         res.sendStatus(200);
-//     //     }
-//     // });
-
-
-//     try {
-//         const result = await db.collection('games').updateOne(
-//           { gameName: req.body.gameName, 'teams.originCountry': req.body.originCountry },
-//           { '$addToSet': { 'teams.$.usedQuestions': returnedQuestion._id } }
-//         );
-        
-//         res.sendStatus(200);
-//       } catch (err) {
-//         console.log(err);
-//         res.sendStatus(400);
-//       }
-      
-// }
 
 const getTerritories = async (gameName) => {
     try {

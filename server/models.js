@@ -167,6 +167,10 @@ const GameSchema = new mongoose.Schema({
     losers:{
         type: [],
         default: []
+    },
+    timeLimit:{
+        type: Number,
+        default:30 
     }
 });
 

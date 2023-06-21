@@ -447,7 +447,7 @@ export const Map2 = (props) => {
             <MapView style={styles.map} region={region} scrollEnabled={false}  userInterfaceStyle={'dark'} mapType={'hybrid'}
   
                 onPress={async (e) => {
-                    setTimeLeft(60)
+                    setTimeLeft(props.route.params.timeLimit)
                     e.persist();
                     let address = await Location.reverseGeocodeAsync(e.nativeEvent.coordinate, { lang: "en" });
                     var countryName = lookup.countries({ alpha2: address[0]["isoCountryCode"] })[0]["name"];
@@ -594,7 +594,11 @@ export const Map2 = (props) => {
                 <Modal animationType={"slide"} transparent={true} visible={modalVisible} onRequestClose={() => { console.log("Modal has been closed.") }}>
 
                     <View style={styles.modal}>
-                        <Text style={{ color: 'red' }}>{timeLeft} seconds left</Text>
+                        {/* <Text style={{ color: 'red' }}>{timeLeft} seconds left</Text> */}
+                        <Text style={{ color: 'red' }}>
+                            {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+                            {String(timeLeft % 60).padStart(2, '0')} time left
+                        </Text>
                         <Image
                             style={{ display: "flex", flex: 1, width: '98%', height: 300,  width: 300, resizeMode: 'contain'}}
                             source={{ uri: questionPath }}

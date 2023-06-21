@@ -28,7 +28,7 @@ export const Group = (props) => {
         if (props.role == "student") {
             const teamWithUsername = props.item.teams.find(team => team.users.includes(props.username)).name;
             socket.emit("joinUserToGame", { "gameName": props.item.gameName, "teamName": teamWithUsername, "username": props.username });
-            props.navigation.navigate("Map2", { username: props.username, gameName: props.item.gameName, teamName: teamWithUsername });
+            props.navigation.navigate("Map2", { username: props.username, gameName: props.item.gameName, teamName: teamWithUsername, timeLimit: props.item.timeLimit ? props.item.timeLimit : 60 });
         }
         else {
             props.setGameGroup(props.item.gameName)
@@ -158,25 +158,25 @@ export const Group = (props) => {
                 <View style={styles.rightContainer}>
                     <View>
                         <View style={{ display: "flex", flexDirection: "row", marginTop: 15, justifyContent: "space-between" }}>
-                        <View style={{ display: "flex", flex:1}}>
-                            <Text style={styles.username}>{props.item.gameName}</Text>
+                            <View style={{ display: "flex", flex: 1 }}>
+                                <Text style={styles.username}>{props.item.gameName}</Text>
                             </View>
-                            <View style={{ display: "flex", flex:1}}>
-                            {props.role == "teacher" ?
-                                <TouchableOpacity onPress={() => !props.item.started ? startGame() : endGame()} >
-                                    {!props.item.started && !started ? <Entypo name="controller-jump-to-start" size={24} color="black" /> :
-                                        <Entypo name="controller-stop" size={24} color="black" />}
-                                </TouchableOpacity> : ""}
-                                </View>
-                                <View style={{ display: "flex", flex:1}}>
-                            {props.role == "teacher" ?
+                            <View style={{ display: "flex", flex: 0.2 }}>
+                                {props.role == "teacher" ?
+                                    <TouchableOpacity onPress={() => !props.item.started ? startGame() : endGame()} >
+                                        {!props.item.started && !started ? <Entypo name="controller-jump-to-start" size={24} color="black" /> :
+                                            <Entypo name="controller-stop" size={24} color="black" />}
+                                    </TouchableOpacity> : ""}
+                            </View>
+                            <View style={{ display: "flex", flex: 0.2 }}>
+                                {props.role == "teacher" ?
 
-                                <TouchableOpacity onPress={() => deleteGame()} >
-                                    <AntDesign name="delete" size={18} color="black" />
-                                </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => deleteGame()} >
+                                        <AntDesign name="delete" size={18} color="black" />
+                                    </TouchableOpacity>
 
-                                : ""}
-                                </View>
+                                    : ""}
+                            </View>
                         </View>
                         <GameSummary summaryVisible={summaryVisible} setSummaryVisible={setSummaryVisible} gameName={props.item.gameName} role={props.role}></GameSummary>
                         <Pressable onPress={setCountryPicker}>
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     },
     rightContainer: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        // justifyContent: "space-between",
         flex: 1,
     },
 });

@@ -8,6 +8,8 @@ import { v4 } from 'uuid';
 import { authContext } from "../../context/AuthContext";
 import { Group2 } from "../../components/Group2";
 import { PickImages } from "./pickImages";
+import SelectDropdown from 'react-native-select-dropdown';
+
 
 import { MultipleSelectList } from 'react-native-dropdown-select-list';
 import { Picker } from '@react-native-picker/picker';
@@ -36,7 +38,11 @@ export const UploadQuestion = (props) => {
     const [teamsMembers, setTeamsMembers] = React.useState([]);
 
     const [modalVisible, setModalVisible] = React.useState(false);
-
+    const timeOptions = [
+        '5 minutes',
+        '10 minutes' , '15 minutes', '20 minutes','30 minutes','1 hour'
+    ];
+    const [selectedTime, setSelectedTime] = useState(60);
 
 
 
@@ -56,9 +62,9 @@ export const UploadQuestion = (props) => {
 
             const imageRef = ref(storage, "images/your_name3.jpg")
             const result = await uploadBytes(imageRef, blobFile)
-            
+
         } catch (err) {
-           
+
         }
 
     }
@@ -76,10 +82,10 @@ export const UploadQuestion = (props) => {
             },
 
         };
-        try {          
-            let response = await axios(options);         
-            let responseOK = response && response.status === 200;          
-            if (responseOK) {             
+        try {
+            let response = await axios(options);
+            let responseOK = response && response.status === 200;
+            if (responseOK) {
                 await setTokens(response.data.accessToken)
             }
         } catch { }
@@ -97,15 +103,16 @@ export const UploadQuestion = (props) => {
             },
             data: {
                 teamsMembers,
-                role: props.route.params.role
+                role: props.route.params.role,
+                timeLimit: selectedTime 
             }
         };
         try {
             let response = await axios(options);
-            let responseOK = response && response.status === 200 ;
+            let responseOK = response && response.status === 200;
             if (responseOK) {
                 let data = await response.data;
-                props.navigation.navigate("GroupSelection", { school: props.route.params.school, role: props.route.params.role, gameName: props.route.params.gameName, username: props.route.params.username }) 
+                props.navigation.navigate("GroupSelection", { school: props.route.params.school, role: props.route.params.role, gameName: props.route.params.gameName, username: props.route.params.username })
                 socket.emit("joinUserToGame", { "gameName": props.route.params.gameName });
 
             }
@@ -180,64 +187,87 @@ export const UploadQuestion = (props) => {
 
 
 
-    const chooseQuestions = () => {console.log("before navigate to pickImages", props.route.params);
-      props.navigation.navigate("PickImages", { role: props.route.params.role, gameName: props.route.params.gameName, username: props.route.params.username, questionList: props.route.params.questionList, setQuestionList: props.route.params.setQuestionList }) 
+    const chooseQuestions = () => {
+        console.log("before navigate to pickImages", props.route.params);
+        props.navigation.navigate("PickImages", { role: props.route.params.role, gameName: props.route.params.gameName, username: props.route.params.username, questionList: props.route.params.questionList, setQuestionList: props.route.params.setQuestionList })
     };
 
 
     return (
-        
+
         <SafeAreaView style={styles.chatScreen}>
-            
-           <ImageBackground
-                        source={require('/Users/hausmann/conquerTheWorld4/assets/worldMapGame.jpg')}
-                        style={{
-                            flex: 1,
-                            resizeMode: 'cover', opacity: 1
-                        }}>                    
-                        <View style={styles.chatTopContainer}>
-                            <View style={styles.chatHeader}>
-                                <Text style={styles.chatHeading}>Teams Creation</Text>
 
-                                <Pressable onPress={() => setVisible(true)}>
-                                    <Feather name='edit' size={24} color='green' />
-                                </Pressable>
-                            </View>
+            <ImageBackground
+                source={require('/Users/hausmann/conquerTheWorld4/assets/worldMapGame.jpg')}
+                style={{
+                    flex: 1,
+                    resizeMode: 'cover', opacity: 1
+                }}>
+                <View style={styles.chatTopContainer}>
+                    <View style={styles.chatHeader}>
+                        <Text style={styles.chatHeading}>Teams Creation</Text>
+
+                        <Pressable onPress={() => setVisible(true)}>
+                            <Feather name='edit' size={24} color='green' />
+                        </Pressable>
+                    </View>
+                </View>
+                <View style={{ flexDirection: 'column', marginTop: 5, marginBottom: 5 }}>
+                    <View style={{ flexDirection: 'row', marginTop: 5, marginBottom: 5 }}>
+                        <View style={{ flex: 1 }}>
+                            <Button onPress={chooseQuestions} style={{ color: 'green', backgroundColor: 'green' }} mode="contained"> Choose Questions</Button>
                         </View>
-                        <View style= {{flexDirection:'row',marginTop:5,marginBottom:5}}>
-                        <View style= {{flex:1}}>
-                            <Button onPress={chooseQuestions} style={{ color: 'green', backgroundColor: 'green'}} mode="contained"> Choose Questions</Button>
+                        <View style={{ flex: 1 }}>
+                            <Button onPress={submit} style={{ color: 'green', backgroundColor: 'green' }} mode="contained" >Submit Groups</Button>
                         </View>
-                        <View style= {{flex:1}}>
-
-                            <Button  onPress={submit} style={{color: 'green', backgroundColor: 'green'}} mode="contained" >Submit Groups</Button>
-                            </View>
-
+                    </View>
+                    <View style={{ flexDirection: 'row', marginTop: 5, marginBottom: 5 }}>
+                    <View style={{ flex:1 }}>
+                        <Text style={styles.text}>Answering Time:</Text>
                         </View>
-                        
+                        <View style={{ flex:1 }}>
+                        <SelectDropdown
+                            data={timeOptions}
+                            onSelect={(selectedItem, index) => {
+                                const timeValue = parseInt(selectedItem.split(' ')[0]);
+                                setSelectedTime(timeValue * 60)
+                            }}
+                            defaultButtonText={'Time Limit'}
+                            buttonTextAfterSelection={(selectedItem, index) => {
 
-                        <View style={styles.chatListContainer}>
-                            {teams.length > 0 ? (
-                                <View style={{marginBottom:50}}>
-                                <FlatList
-                                    data={teams}
-                                    renderItem={({ item }) => <Group2 role={props.route.params.role} school={props.route.params.school} gameName={props.route.params.gameName} teamsMembers={teamsMembers} setTeamsMembers={setTeamsMembers} navigation={props.navigation} item={item} />}
-                                    keyExtractor={(item, index) => index.toString()}
-                                    contentContainerStyle={{ flexGrow: 1 }}
-
-                                />
-                                </View>
-                            ) : (
-                                <View style={styles.chatEmptyContainer}>
-                                    <Text style={styles.chatEmptyText}>No teams created!</Text>
-                                    <Text>Click the icon above to create a new Game</Text>
-                                </View>
-                            )}
+                                return 'Time Limit';
+                            }}
+                            rowTextForSelection={(item, index) => {
+                                return item
+                            }}
+                        />
                         </View>
-                        {visible ? <CreateTeam teams={teams} setVisible={setVisible} setTeams={setTeams} /> : ""}                
-                </ImageBackground>
+                    </View>
+                </View>
+
+
+                <View style={styles.chatListContainer}>
+                    {teams.length > 0 ? (
+                        <View style={{ marginBottom: 50 }}>
+                            <FlatList
+                                data={teams}
+                                renderItem={({ item }) => <Group2 role={props.route.params.role} school={props.route.params.school} gameName={props.route.params.gameName} teamsMembers={teamsMembers} setTeamsMembers={setTeamsMembers} navigation={props.navigation} item={item} />}
+                                keyExtractor={(item, index) => index.toString()}
+                                contentContainerStyle={{ flexGrow: 1 }}
+
+                            />
+                        </View>
+                    ) : (
+                        <View style={styles.chatEmptyContainer}>
+                            <Text style={styles.chatEmptyText}>No teams created!</Text>
+                            <Text>Click the icon above to create a new Team</Text>
+                        </View>
+                    )}
+                </View>
+                {visible ? <CreateTeam teams={teams} setVisible={setVisible} setTeams={setTeams} /> : ""}
+            </ImageBackground>
         </SafeAreaView>
-       
+
 
     );
 };
@@ -257,7 +287,7 @@ const styles = StyleSheet.create({
     },
     chatTopContainer: {
         backgroundColor: "#F7F7F7",
-        height: 70,
+        height: 30,
         width: "100%",
         justifyContent: "center",
         marginBottom: 0,
@@ -316,8 +346,9 @@ const styles = StyleSheet.create({
         marginTop: 200
     },
     text: {
-        color: '#fff',
-        fontSize: 20,
+        color: 'black',
+        fontSize: 16,
+        fontWeight: "bold",
         textAlign: 'center',
     },
     textI: {
